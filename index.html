@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Marine — Règlement</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:    #0a1628;
+    --deep:    #061020;
+    --mid:     #0d2137;
+    --border:  #1e4060;
+    --accent:  #5bc0eb;
+    --accent2: #1e6fa5;
+    --gold:    #c9a84c;
+    --text:    #dde4ed;
+    --muted:   #7a90a8;
+    --correct: #6fcf97;
+    --wrong:   #eb5757;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Crimson Text', Georgia, serif;
+    background: var(--deep);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ── FOND ────────────────────────────────────────────────── */
+  #bg-layer {
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, rgba(6,16,32,.82) 0%, rgba(6,16,32,.65) 50%, rgba(6,16,32,.88) 100%),
+      url('bg.jpg') center/cover no-repeat;
+    z-index: 0;
+  }
+  /* Fallback si pas de bg.jpg */
+  #bg-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(30,111,165,.18) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 70%, rgba(91,192,235,.10) 0%, transparent 55%);
+  }
+
+  /* ── HEADER ──────────────────────────────────────────────── */
+  header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 2.8rem 2rem 2rem;
+    border-bottom: 1px solid rgba(91,192,235,.2);
+    background: linear-gradient(to bottom, rgba(6,16,32,.9), transparent);
+  }
+
+  .header-anchor {
+    font-family: 'Cinzel', serif;
+    font-size: 2.4rem;
+    color: var(--accent);
+    letter-spacing: .15em;
+    text-shadow: 0 0 30px rgba(91,192,235,.4);
+    line-height: 1;
+    margin-bottom: .5rem;
+  }
+
+  header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    margin-bottom: .35rem;
+  }
+
+  header p {
+    font-family: 'Crimson Text', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--muted);
+  }
+
+  /* ── SIGNATURE ───────────────────────────────────────────── */
+  .signature {
+    position: fixed;
+    bottom: 1rem;
+    right: 1.4rem;
+    z-index: 100;
+    font-family: 'Cinzel', serif;
+    font-size: .7rem;
+    color: var(--gold);
+    letter-spacing: .18em;
+    opacity: .7;
+    text-transform: uppercase;
+    pointer-events: none;
+    text-shadow: 0 0 12px rgba(201,168,76,.3);
+  }
+
+  /* ── LAYOUT ──────────────────────────────────────────────── */
+  .container {
+    position: relative;
+    z-index: 10;
+    max-width: 760px;
+    margin: 2rem auto;
+    padding: 0 1.2rem 6rem;
+  }
+
+  /* ── CARDS ───────────────────────────────────────────────── */
+  .card {
+    background: rgba(13,33,55,.82);
+    border: 1px solid rgba(30,64,96,.7);
+    border-radius: 12px;
+    padding: 2.2rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 8px 40px rgba(0,0,0,.4);
+  }
+
+  .card h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.25rem;
+    color: var(--accent);
+    letter-spacing: .1em;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  /* ── INPUTS ──────────────────────────────────────────────── */
+  input[type=text], input[type=password] {
+    width: 100%;
+    padding: .75rem 1.1rem;
+    background: rgba(10,22,40,.8);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Crimson Text', serif;
+    font-size: 1.05rem;
+    margin-bottom: .9rem;
+    transition: border-color .2s;
+    outline: none;
+  }
+  input[type=text]:focus, input[type=password]:focus { border-color: var(--accent); }
+  input::placeholder { color: #455; }
+
+  /* ── BUTTON ──────────────────────────────────────────────── */
+  .btn {
+    background: linear-gradient(135deg, var(--accent2), #1480b8);
+    color: #fff;
+    border: none;
+    padding: .75rem 2.2rem;
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: .9rem;
+    letter-spacing: .1em;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+    box-shadow: 0 4px 16px rgba(30,111,165,.35);
+  }
+  .btn:hover { opacity: .88; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: .4; cursor: default; transform: none; }
+
+  .btn-center { text-align: center; margin-top: .5rem; }
+
+  /* ── PROGRESS ────────────────────────────────────────────── */
+  .progress-wrap {
+    background: rgba(10,22,40,.6);
+    border-radius: 10px;
+    height: 5px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(30,64,96,.4);
+  }
+  .progress-bar {
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    height: 5px;
+    border-radius: 10px;
+    transition: width .3s;
+    box-shadow: 0 0 8px rgba(91,192,235,.5);
+  }
+
+  /* ── QUESTION CARDS ──────────────────────────────────────── */
+  .question-card {
+    background: rgba(13,33,55,.75);
+    border: 1px solid rgba(30,64,96,.5);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.4rem;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .q-number {
+    font-family: 'Cinzel', serif;
+    font-size: .7rem;
+    color: var(--accent);
+    letter-spacing: .12em;
+    margin-bottom: .5rem;
+  }
+  .q-text {
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 1.1rem;
+    line-height: 1.55;
+    font-weight: 600;
+  }
+  .options label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: .6rem 1rem;
+    margin-bottom: .45rem;
+    background: rgba(10,22,40,.7);
+    border: 1px solid rgba(30,53,85,.6);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    font-size: 1rem;
+  }
+  .options label:hover { border-color: var(--accent2); background: rgba(14,31,56,.85); }
+  .options label.selected { border-color: var(--accent); background: rgba(14,40,64,.9); }
+  .options input[type=radio] { accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* ── RESULTS ──────────────────────────────────────────────── */
+  .score-big {
+    font-family: 'Cinzel', serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--accent);
+    text-align: center;
+    margin: 1rem 0 .3rem;
+    text-shadow: 0 0 24px rgba(91,192,235,.4);
+  }
+  .score-label { text-align: center; color: var(--muted); margin-bottom: 1.8rem; font-style: italic; }
+
+  .result-item {
+    padding: .9rem 1rem;
+    margin-bottom: .55rem;
+    border-radius: 7px;
+    font-size: .97rem;
+    line-height: 1.45;
+  }
+  .result-item.correct { background: rgba(10,42,26,.7); border: 1px solid rgba(26,106,58,.6); color: var(--correct); }
+  .result-item.wrong   { background: rgba(42,14,14,.7); border: 1px solid rgba(106,26,26,.6); color: var(--wrong); }
+  .result-item .ri-q   { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .result-item .ri-a   { font-size: .88rem; }
+  .result-item .ri-correct { color: var(--correct); }
+  .result-item .ri-wrong   { color: var(--wrong); }
+
+  .send-area {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(30,53,85,.5);
+  }
+  .send-area p { color: var(--muted); font-style: italic; font-size: .95rem; margin-bottom: 1rem; }
+  #send-status { font-size: .9rem; margin-top: .5rem; min-height: 1.2rem; }
+  #send-status.ok  { color: var(--correct); }
+  #send-status.err { color: var(--wrong); }
+
+  /* ── ADMIN LINK ──────────────────────────────────────────── */
+  .admin-link {
+    text-align: center;
+    margin-top: 3rem;
+  }
+  .admin-link button {
+    background: none;
+    border: 1px solid rgba(201,168,76,.3);
+    color: var(--gold);
+    padding: .5rem 1.4rem;
+    border-radius: 5px;
+    font-family: 'Cinzel', serif;
+    font-size: .72rem;
+    letter-spacing: .15em;
+    cursor: pointer;
+    opacity: .6;
+    transition: opacity .2s, border-color .2s;
+  }
+  .admin-link button:hover { opacity: 1; border-color: var(--gold); }
+
+  /* ── ADMIN MODAL ─────────────────────────────────────────── */
+  #admin-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  #admin-overlay.open { display: flex; }
+
+  #admin-modal {
+    background: rgba(10,22,40,.97);
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 2.2rem;
+    width: min(580px, 94vw);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 0 60px rgba(201,168,76,.15);
+    position: relative;
+  }
+  #admin-modal h2 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 1.1rem;
+    letter-spacing: .15em;
+    margin-bottom: 1.4rem;
+    text-align: center;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 1rem; right: 1.2rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .close-btn:hover { color: var(--text); }
+
+  /* ── ADMIN TABLE ─────────────────────────────────────────── */
+  #results-table-wrap { overflow-x: auto; margin-top: 1rem; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .87rem;
+  }
+  th {
+    font-family: 'Cinzel', serif;
+    font-size: .72rem;
+    letter-spacing: .1em;
+    color: var(--gold);
+    border-bottom: 1px solid rgba(201,168,76,.3);
+    padding: .5rem .7rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+  td {
+    padding: .5rem .7rem;
+    border-bottom: 1px solid rgba(30,64,96,.3);
+    color: var(--text);
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(30,64,96,.15); }
+
+  .tag-pass { color: var(--correct); font-weight: 600; }
+  .tag-fail { color: var(--wrong); font-weight: 600; }
+
+  .admin-actions {
+    display: flex;
+    gap: .8rem;
+    flex-wrap: wrap;
+    margin-top: 1.2rem;
+    justify-content: center;
+  }
+  .btn-sm {
+    padding: .45rem 1.2rem;
+    font-size: .78rem;
+  }
+  .btn-danger { background: linear-gradient(135deg, #8b1a1a, #b22222); }
+
+  #admin-empty { text-align: center; color: var(--muted); font-style: italic; padding: 2rem; }
+
+  /* ── INTRO SPACING ───────────────────────────────────────── */
+  #intro p { color: var(--muted); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; font-size: 1.05rem; }
+  #intro input { margin-bottom: .7rem; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(91,192,235,.3); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div id="bg-layer"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-anchor">⚓</div>
+  <h1>Quiz Règlement Marine</h1>
+  <p>10 questions tirées aléatoirement parmi 50</p>
+</header>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- INTRO -->
+  <div id="intro" class="card">
+    <h2>Bienvenue, Marine</h2>
+    <p>Ce quiz tire aléatoirement <strong>10 questions</strong> parmi 50.<br>
+       Renseignez votre matricule et votre grade avant de commencer.</p>
+    <input type="text" id="matricule" placeholder="Matricule (ex : MRN-0042)" />
+    <input type="text" id="nom"       placeholder="Grade + Nom (ex : Sergent Dupont)" />
+    <div class="btn-center">
+      <button class="btn" onclick="startQuiz()">Commencer le quiz</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-area" style="display:none;">
+    <div class="progress-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+    <div id="questions-container"></div>
+    <div class="btn-center" style="margin-top:1rem;">
+      <button class="btn" id="submit-btn" onclick="submitQuiz()">Soumettre mes réponses</button>
+    </div>
+  </div>
+
+  <!-- RÉSULTATS -->
+  <div id="results" class="card" style="display:none;">
+    <h2>Résultats</h2>
+    <div class="score-big" id="score-display"></div>
+    <div class="score-label" id="score-label"></div>
+    <div id="results-detail"></div>
+    <div class="send-area">
+      <div id="save-status"></div>
+      <button class="btn" onclick="restartQuiz()" style="margin-top:.8rem;">Recommencer</button>
+    </div>
+  </div>
+
+  <!-- Lien admin discret -->
+  <div class="admin-link">
+    <button onclick="openAdmin()">⚜ ACCÈS HAUT GRADÉ</button>
+  </div>
+
+</div>
+
+<!-- SIGNATURE -->
+<div class="signature">PAR LUMEN ARGENTIS</div>
+
+<!-- ADMIN OVERLAY -->
+<div id="admin-overlay">
+  <div id="admin-modal">
+    <button class="close-btn" onclick="closeAdmin()">✕</button>
+    <h2>⚜ ESPACE HAUT GRADÉ</h2>
+
+    <!-- Login -->
+    <div id="admin-login">
+      <input type="password" id="admin-pw" placeholder="Mot de passe" />
+      <div class="btn-center">
+        <button class="btn" onclick="checkPassword()">Accéder</button>
+      </div>
+      <div id="pw-error" style="color:var(--wrong);text-align:center;margin-top:.7rem;font-size:.9rem;"></div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="admin-dashboard" style="display:none;">
+      <div id="admin-empty" style="display:none;">Aucun résultat enregistré pour le moment.</div>
+      <div id="results-table-wrap">
+        <table id="results-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Matricule</th>
+              <th>Nom</th>
+              <th>Score</th>
+              <th>%</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="results-tbody"></tbody>
+        </table>
+      </div>
+      <div class="admin-actions">
+        <button class="btn btn-sm" onclick="exportCSV()">⬇ Exporter CSV</button>
+        <button class="btn btn-sm btn-danger" onclick="clearResults()">🗑 Effacer tout</button>
+        <button class="btn btn-sm" onclick="closeAdmin()">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---- obfuscated ---- */
+(function(){
+  // decode helper
+  var _k=42;
+  var _d=function(s){return atob(s);};
+  var _xd=function(a){return a.map(function(c){return String.fromCharCode(c^_k);}).join('');};
+
+  // password (XOR encoded)
+  var _pw=[103, 75, 88, 67, 68, 79, 24, 26, 24, 31, 11];
+  window.__ap=function(v){return v===_xd(_pw);};
+
+  // questions (base64 encoded)
+  var _qb64="WwogIHsKICAgICJxIjogIlF1ZSBzaWduaWZpZSBsZSBuaXZlYXUgREVGQ09OIDIgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIlJlbmZvcmNlbWVudCBkZXMgY29udHJcdTAwZjRsZXMiLAogICAgICAiUmllbiIsCiAgICAgICJQYWl4IHRvdGFsZSIKICAgIF0sCiAgICAiY29ycmVjdCI6IDAKICB9LAogIHsKICAgICJxIjogIkNvbW1lbnQgdW4gbWFyaW5lIGRvaXQtaWwgc2UgY29tcG9ydGVyIGVudmVycyBsZXMgY2l2aWxzID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJMZXMgaWdub3JlciIsCiAgICAgICJMZXMgcmVzcGVjdGVyIiwKICAgICAgIkxlcyBtXHUwMGU5cHJpc2VyIgogICAgXSwKICAgICJjb3JyZWN0IjogMQogIH0sCiAgewogICAgInEiOiAiRGFucyBxdWVsIGNhcyB1biBtYXJpbmUgcGV1dC1pbCBwcmVuZHJlIGxhIHBhcm9sZSA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiU2FucyBhdXRvcmlzYXRpb24iLAogICAgICAiSmFtYWlzIiwKICAgICAgIkF2ZWMgYXV0b3Jpc2F0aW9uIgogICAgXSwKICAgICJjb3JyZWN0IjogMgogIH0sCiAgewogICAgInEiOiAiUXVlbGxlIGVzdCBsYSBjb25zXHUwMGU5cXVlbmNlIGQndW4gYmxcdTAwZTJtZSBkZSBuaXZlYXUgMyA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiQm9udXMiLAogICAgICAiUmllbiIsCiAgICAgICJDb3VyIG1hcnRpYWxlIgogICAgXSwKICAgICJjb3JyZWN0IjogMgogIH0sCiAgewogICAgInEiOiAiTGUgcG9ydCBkZSBsJ3VuaWZvcm1lIGVzdC1pbCBvYmxpZ2F0b2lyZSA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiT2JsaWdhdG9pcmUiLAogICAgICAiRmFjdWx0YXRpZiIsCiAgICAgICJJbnV0aWxlIgogICAgXSwKICAgICJjb3JyZWN0IjogMAogIH0sCiAgewogICAgInEiOiAiQ29tbWVudCB1biBtYXJpbmUgZG9pdC1pbCByXHUwMGU5YWdpciBmYWNlIFx1MDBlMCB1biBvcmRyZSA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiTGVzIGV4XHUwMGU5Y3V0ZXIgZmlkXHUwMGU4bGVtZW50IiwKICAgICAgIkxlcyBpZ25vcmVyIiwKICAgICAgIkxlcyBtb2RpZmllciIKICAgIF0sCiAgICAiY29ycmVjdCI6IDAKICB9LAogIHsKICAgICJxIjogIkNvbW1lbnQgZG9pdCBcdTAwZWF0cmUgb3JnYW5pc1x1MDBlOWUgdW5lIHBhdHJvdWlsbGUgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIkxpYnJlIiwKICAgICAgIk9yZ2FuaXNcdTAwZTllIiwKICAgICAgIkRpc3BlcnNcdTAwZTllIgogICAgXSwKICAgICJjb3JyZWN0IjogMQogIH0sCiAgewogICAgInEiOiAiQ29tbWVudCBlc3QgY29uc2lkXHUwMGU5clx1MDBlOWUgbGEgY29ycnVwdGlvbiBkYW5zIGxhIE1hcmluZSA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiUHVuaWUgc1x1MDBlOXZcdTAwZThyZW1lbnQiLAogICAgICAiTm9ybWFsZSIsCiAgICAgICJBY2NlcHRhYmxlIgogICAgXSwKICAgICJjb3JyZWN0IjogMAogIH0sCiAgewogICAgInEiOiAiUXVlbGxlIGVzdCBsYSBwcmlvcml0XHUwMGU5IGQndW4gbWFyaW5lID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJMZXMgcGlyYXRlcyIsCiAgICAgICJMdWktbVx1MDBlYW1lIiwKICAgICAgIkxlcyBjaXZpbHMiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfSwKICB7CiAgICAicSI6ICJMYSB2aW9sZW5jZSBlbnRyZSBtYXJpbmVzIGVzdC1lbGxlIGF1dG9yaXNcdTAwZTllID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJFbmNvdXJhZ1x1MDBlOWUiLAogICAgICAiSW50ZXJkaXRlIiwKICAgICAgIkF1dG9yaXNcdTAwZTllIgogICAgXSwKICAgICJjb3JyZWN0IjogMQogIH0sCiAgewogICAgInEiOiAiUXVlIHNpZ25pZmllIGxlIG5pdmVhdSBERUZDT04gMSA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiU3VydmVpbGxhbmNlIiwKICAgICAgIk1vYmlsaXNhdGlvbiBtYXhpbWFsZSIsCiAgICAgICJSZXBvcyIKICAgIF0sCiAgICAiY29ycmVjdCI6IDEKICB9LAogIHsKICAgICJxIjogIlF1ZWwgZXN0IGxlIGJvbiBmb3JtYXQgZHUgbm9tIHN1ciBsJ2VzY2FyZ29waG9uZSA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiUHNldWRvIiwKICAgICAgIk5vbSBzZXVsIiwKICAgICAgIk1hdHJpY3VsZSArIGdyYWRlICsgbm9tIgogICAgXSwKICAgICJjb3JyZWN0IjogMgogIH0sCiAgewogICAgInEiOiAiQ29tbWVudCBkb2l0IHNlIGNvbXBvcnRlciB1biBoYXV0IGdyYWRcdTAwZTkgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIkFidXNlciIsCiAgICAgICJJZ25vcmVyIiwKICAgICAgIlx1MDBjYXRyZSBleGVtcGxhaXJlIgogICAgXSwKICAgICJjb3JyZWN0IjogMgogIH0sCiAgewogICAgInEiOiAiRXN0LWlsIGF1dG9yaXNcdTAwZTkgZGUgcG9pbnRlciB1bmUgYXJtZSBzdXIgdW4gY2FtYXJhZGUgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIlRvdWpvdXJzIiwKICAgICAgIk5vbiBzYXVmIGVudHJhXHUwMGVlbmVtZW50IiwKICAgICAgIk91aSIKICAgIF0sCiAgICAiY29ycmVjdCI6IDEKICB9LAogIHsKICAgICJxIjogIlx1MDBjMCBxdW9pIHNlcnZlbnQgbGVzIHJhcHBvcnRzID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJcdTAwYzl2YWx1ZXIgYWN0aXZpdFx1MDBlOSIsCiAgICAgICJEXHUwMGU5Y29yZXIiLAogICAgICAiUmllbiIKICAgIF0sCiAgICAiY29ycmVjdCI6IDAKICB9LAogIHsKICAgICJxIjogIlx1MDBjMCBxdW9pIGNvcnJlc3BvbmQgdW4gYmxcdTAwZTJtZSBkZSBuaXZlYXUgMSA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiRmF1dGUgbWluZXVyZSIsCiAgICAgICJBdWN1bmUgZmF1dGUiLAogICAgICAiRmF1dGUgZ3JhdmUiCiAgICBdLAogICAgImNvcnJlY3QiOiAwCiAgfSwKICB7CiAgICAicSI6ICJRdWVsbGUgYXR0aXR1ZGUgYWRvcHRlciBsb3JzIGQndW4gcmFzc2VtYmxlbWVudCA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiU2lsZW5jZSIsCiAgICAgICJQYXJ0aXIiLAogICAgICAiUGFybGVyIgogICAgXSwKICAgICJjb3JyZWN0IjogMAogIH0sCiAgewogICAgInEiOiAiUXVlbGxlIGVzdCBsJ2ltcG9ydGFuY2UgZGUgbGEgaGlcdTAwZTlyYXJjaGllID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJPcHRpb25uZWxsZSIsCiAgICAgICJJbnV0aWxlIiwKICAgICAgIkltcG9ydGFudGUiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfSwKICB7CiAgICAicSI6ICJDb21tZW50IHVuIG1hcmluZSBkb2l0LWlsIHNlIGRcdTAwZTlwbGFjZXIgZW4gbWlzc2lvbiA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiQ29tbWUgb24gdmV1dCIsCiAgICAgICJTZXVsIiwKICAgICAgIkphbWFpcyBzZXVsIgogICAgXSwKICAgICJjb3JyZWN0IjogMgogIH0sCiAgewogICAgInEiOiAiUXVlIHNpZ25pZmllIHJlc3BlY3RlciB1biBvcmRyZSA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiTW9kaWZpZXIiLAogICAgICAiRXhcdTAwZTljdXRlciIsCiAgICAgICJJZ25vcmVyIgogICAgXSwKICAgICJjb3JyZWN0IjogMQogIH0sCiAgewogICAgInEiOiAiUXVlIHJlcHJcdTAwZTlzZW50ZSBsZSBERUZDT04gMyA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiVXJnZW5jZSIsCiAgICAgICJTdXJ2ZWlsbGFuY2Ugbm9ybWFsZSIsCiAgICAgICJHdWVycmUiCiAgICBdLAogICAgImNvcnJlY3QiOiAxCiAgfSwKICB7CiAgICAicSI6ICJRdWVsbGVzIHNvbnQgbGVzIFx1MDBlOXRhcGVzIGF2YW50IHVuZSBhcnJlc3RhdGlvbiA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiSWdub3JlciIsCiAgICAgICJGcmFwcGVyIiwKICAgICAgIkV4cGxpcXVlciArIG5ldXRyYWxpc2VyICsgZm91aWxsZXIiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfSwKICB7CiAgICAicSI6ICJDb21tZW50IHVuIG1hcmluZSBkb2l0LWlsIGNvbnNpZFx1MDBlOXJlciBzZXMgY2FtYXJhZGVzID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJJbnV0aWxlcyIsCiAgICAgICJGYW1pbGxlIiwKICAgICAgIlJpdmF1eCIKICAgIF0sCiAgICAiY29ycmVjdCI6IDEKICB9LAogIHsKICAgICJxIjogIkRhbnMgcXVlbCBcdTAwZTl0YXQgZG9pdCBcdTAwZWF0cmUgbGEgcmFkaW8gZW4gc2VydmljZSA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiRmFjdWx0YXRpdmUiLAogICAgICAiQWN0aXZlIiwKICAgICAgIlx1MDBjOXRlaW50ZSIKICAgIF0sCiAgICAiY29ycmVjdCI6IDEKICB9LAogIHsKICAgICJxIjogIlF1ZWxsZSBlc3QgbGEgY29uc1x1MDBlOXF1ZW5jZSBkJ3VuIGJsXHUwMGUybWUgZGUgbml2ZWF1IDIgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIlJcdTAwZTljb21wZW5zZSIsCiAgICAgICJQcm9tb3Rpb24iLAogICAgICAiUlx1MDBlOXRyb2dyYWRhdGlvbiIKICAgIF0sCiAgICAiY29ycmVjdCI6IDIKICB9LAogIHsKICAgICJxIjogIk9cdTAwZjkgdW4gbWFyaW5lIGRvaXQtaWwgcydlbnRyYVx1MDBlZW5lciA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiUGFydG91dCIsCiAgICAgICJab25lIGRcdTAwZTlkaVx1MDBlOWUiLAogICAgICAiVmlsbGUiCiAgICBdLAogICAgImNvcnJlY3QiOiAxCiAgfSwKICB7CiAgICAicSI6ICJDb21tZW50IGVzdCBjb25zaWRcdTAwZTlyXHUwMGU5IHVuIGFidXMgZCdhdXRvcml0XHUwMGU5ID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJOb3JtYWwiLAogICAgICAiQWNjZXB0YWJsZSIsCiAgICAgICJGYXV0ZSBncmF2ZSIKICAgIF0sCiAgICAiY29ycmVjdCI6IDIKICB9LAogIHsKICAgICJxIjogIlx1MDBjMCBxdW9pIHNlcnQgbCdlc2NhcmdvcGhvbmUgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIkpldXgiLAogICAgICAiUGVyc29ubmVsIiwKICAgICAgIlByb2Zlc3Npb25uZWwiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfSwKICB7CiAgICAicSI6ICJDb21tZW50IGRvaXQgc2UgZFx1MDBlOXJvdWxlciB1biBjb250clx1MDBmNGxlIGNpdmlsID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJSZXNwZWN0dWV1eCIsCiAgICAgICJJbnV0aWxlIiwKICAgICAgIlZpb2xlbnQiCiAgICBdLAogICAgImNvcnJlY3QiOiAwCiAgfSwKICB7CiAgICAicSI6ICJDb21tZW50IGZvbmN0aW9ubmVudCBsZXMgc2FuY3Rpb25zIGRhbnMgbGEgTWFyaW5lID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJUb3Vqb3VycyBmYWlibGVzIiwKICAgICAgIkF1Y3VuZSIsCiAgICAgICJQcm9ncmVzc2l2ZXMganVzcXUnXHUwMGUwIGxvdXJkZXMiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfSwKICB7CiAgICAicSI6ICJDb21tZW50IGdcdTAwZTlyZXIgdW4gY29uZmxpdCBlbnRyZSBtYXJpbmVzID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJJZ25vcmVyIiwKICAgICAgIkRpYWxvZ3VlIiwKICAgICAgIlZpb2xlbmNlIgogICAgXSwKICAgICJjb3JyZWN0IjogMQogIH0sCiAgewogICAgInEiOiAiUXVlIGZhdXQtaWwgZmFpcmUgZGVzIGluZm9ybWF0aW9ucyBzZW5zaWJsZXMgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIlByb3RcdTAwZTlnZXIgaW5mb3MiLAogICAgICAiUGFydGFnZXIgdG91dCIsCiAgICAgICJJZ25vcmVyIgogICAgXSwKICAgICJjb3JyZWN0IjogMAogIH0sCiAgewogICAgInEiOiAiQ29tbWVudCByXHUwMGU5YWdpciBmYWNlIFx1MDBlMCB1biBZb25rbyBzYW5zIG9yZHJlID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJBdHRhcXVlciBzZXVsIiwKICAgICAgIkF0dGVuZHJlIG9yZHJlIiwKICAgICAgIlByb3ZvcXVlciIKICAgIF0sCiAgICAiY29ycmVjdCI6IDEKICB9LAogIHsKICAgICJxIjogIkNvbW1lbnQgZG9pdCBcdTAwZWF0cmUgbGEgdGVudWUgZCd1biBtYXJpbmUgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIlBldSBpbXBvcnRlIiwKICAgICAgIlByb3ByZSIsCiAgICAgICJTYWxlIgogICAgXSwKICAgICJjb3JyZWN0IjogMQogIH0sCiAgewogICAgInEiOiAiRGUgcXVvaSBkXHUwMGU5cGVuZCB1bmUgcHJvbW90aW9uID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJEaXNjaXBsaW5lIiwKICAgICAgIkhhc2FyZCIsCiAgICAgICJDaGFuY2UiCiAgICBdLAogICAgImNvcnJlY3QiOiAwCiAgfSwKICB7CiAgICAicSI6ICJRdWVsbGUgYXR0aXR1ZGUgYWRvcHRlciBlbnZlcnMgbGUgR291dmVybmVtZW50IG1vbmRpYWwgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIklnbm9yZXIiLAogICAgICAiUmVzcGVjdGVyIiwKICAgICAgIk1hbnF1ZXIgZGUgcmVzcGVjdCIKICAgIF0sCiAgICAiY29ycmVjdCI6IDEKICB9LAogIHsKICAgICJxIjogIkNvbW1lbnQgdW4gbWFyaW5lIGRvaXQtaWwgZ1x1MDBlOXJlciBzZXMgXHUwMGU5bW90aW9ucyA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiRnVpciIsCiAgICAgICJTZSBtYVx1MDBlZXRyaXNlciIsCiAgICAgICJTJ1x1MDBlOW5lcnZlciIKICAgIF0sCiAgICAiY29ycmVjdCI6IDEKICB9LAogIHsKICAgICJxIjogIlF1aSBwZXV0IGF1dG9yaXNlciB1bmUgcGF0cm91aWxsZSA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiQ2l2aWxzIiwKICAgICAgIlRvdXMiLAogICAgICAiQ29tbWFuZGVtZW50IgogICAgXSwKICAgICJjb3JyZWN0IjogMgogIH0sCiAgewogICAgInEiOiAiUGV1dC1vbiBmYWlyZSBlbnRyZXIgcXVlbHF1J3VuIGRhbnMgdW4gYXZhbnQtcG9zdGUgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIlRvdWpvdXJzIHBlcm1pcyIsCiAgICAgICJMaWJyZSIsCiAgICAgICJBdXRvcmlzYXRpb24gb2JsaWdhdG9pcmUiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfSwKICB7CiAgICAicSI6ICJRdWVsbGUgdGVudWUgcG91ciB1biBtb3Vzc2FpbGxvbiA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiQ29zdHVtZSIsCiAgICAgICJNYW5jaGVzIGxvbmd1ZXMiLAogICAgICAiTWFuY2hlcyBjb3VydGVzIgogICAgXSwKICAgICJjb3JyZWN0IjogMgogIH0sCiAgewogICAgInEiOiAiUXVlbCBhY2Nlc3NvaXJlIHVuIHNlcmdlbnQgcGV1dC1pbCBwb3J0ZXIgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIkNvc3R1bWUiLAogICAgICAiQ2FwZSBjb2xvclx1MDBlOWUiLAogICAgICAiQ2FzcXVldHRlIgogICAgXSwKICAgICJjb3JyZWN0IjogMgogIH0sCiAgewogICAgInEiOiAiQ29tbWVudCBzZSBwclx1MDBlOXNlbnRlciBjb3JyZWN0ZW1lbnQgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIlBzZXVkbyIsCiAgICAgICJSaWVuIiwKICAgICAgIk1hdHJpY3VsZSArIGlkZW50aXRcdTAwZTkiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfSwKICB7CiAgICAicSI6ICJRdWUgZmFpcmUgZW4gY2FzIGRlIGZhdXRlIG9ic2Vydlx1MDBlOWUgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIlNlIHZlbmdlciIsCiAgICAgICJJZ25vcmVyIiwKICAgICAgIlNpZ25hbGVyIgogICAgXSwKICAgICJjb3JyZWN0IjogMgogIH0sCiAgewogICAgInEiOiAiUXVlbGxlIGF0dGl0dWRlIGRvaXQgYXZvaXIgdW4gbWFyaW5lID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJJbnNvbGVudCIsCiAgICAgICJJcnJlc3BlY3R1ZXV4IiwKICAgICAgIlByb2Zlc3Npb25uZWwiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfSwKICB7CiAgICAicSI6ICJRdWUgZGl0IGxlIGNvZGUgZCdob25uZXVyIHN1ciBsZXMgY2FtYXJhZGVzID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJJZ25vcmVyIiwKICAgICAgIlByb3RcdTAwZTlnZXIgY2FtYXJhZGVzIiwKICAgICAgIkFiYW5kb25uZXIiCiAgICBdLAogICAgImNvcnJlY3QiOiAxCiAgfSwKICB7CiAgICAicSI6ICJDb21tZW50IHVuIG1hcmluZSBkb2l0LWlsIHRyYWl0ZXIgc29uIGFybWUgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIkpldFx1MDBlOWUiLAogICAgICAiTlx1MDBlOWdsaWdcdTAwZTllIiwKICAgICAgIkVudHJldGVudWUiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfSwKICB7CiAgICAicSI6ICJRdWkgcGV1dCBhY2NcdTAwZTlkZXIgYXV4IGNlbGx1bGVzID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJDaXZpbHMiLAogICAgICAiVG91dCBsZSBtb25kZSIsCiAgICAgICJEaXNjaXBsaW5haXJlIHVuaXF1ZW1lbnQiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfSwKICB7CiAgICAicSI6ICJRdWUgc2lnbmlmaWUgbGEgbG95YXV0XHUwMGU5ID8iLAogICAgIm9wdGlvbnMiOiBbCiAgICAgICJNZW50aXIiLAogICAgICAiRmlkXHUwMGU5bGl0XHUwMGU5IiwKICAgICAgIlRyYWhpciIKICAgIF0sCiAgICAiY29ycmVjdCI6IDEKICB9LAogIHsKICAgICJxIjogIlF1ZWxsZSBlc3QgbGEgclx1MDBlOGdsZSBwb3VyIHBhcmxlciA/IiwKICAgICJvcHRpb25zIjogWwogICAgICAiSW50ZXJkaXRlIiwKICAgICAgIkF1dG9yaXNhdGlvbiIsCiAgICAgICJMaWJyZSIKICAgIF0sCiAgICAiY29ycmVjdCI6IDEKICB9LAogIHsKICAgICJxIjogIkNvbW1lbnQgdW4gbWFyaW5lIGRvaXQtaWwgcmVwclx1MDBlOXNlbnRlciBsYSBNYXJpbmUgPyIsCiAgICAib3B0aW9ucyI6IFsKICAgICAgIklnbm9yZXIiLAogICAgICAiUmlkaWN1bGlzZXIiLAogICAgICAiUmVwclx1MDBlOXNlbnRlciBkaWduZW1lbnQiCiAgICBdLAogICAgImNvcnJlY3QiOiAyCiAgfQpd";
+  var _qraw=_d(_qb64);
+  window.ALL_QUESTIONS=JSON.parse(_qraw);
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   CONFIGURATION
+═══════════════════════════════════════════════════════════ */
+/* password obfuscated */
+
+/* ── JSONKeeper config ─────────────────────────────────── */
+const _JK_URL = "https://jsonkeeper.com/b/8LTEJ";
+
+/* ═══════════════════════════════════════════════════════════
+   QUESTIONS
+═══════════════════════════════════════════════════════════ */
+/* questions loaded from obfuscated block */
+
+/* ═══════════════════════════════════════════════════════════
+   ÉTAT
+═══════════════════════════════════════════════════════════ */
+let _sq = [];
+let _ua = {};
+let _pi = {};
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITAIRES
+═══════════════════════════════════════════════════════════ */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+async function _gsr() {
+  try {
+    const r = await fetch(_JK_URL);
+    const j = await r.json();
+    return Array.isArray(j) ? j : [];
+  } catch { return []; }
+}
+
+async function _sv(result) {
+  try {
+    const arr = await _gsr();
+    arr.push(result);
+    await fetch(_JK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(arr)
+    });
+  } catch(e) { console.error('Erreur sauvegarde:', e); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════════════════════════ */
+function startQuiz() {
+  const mat = document.getElementById('matricule').value.trim();
+  const nom = document.getElementById('nom').value.trim();
+  if (!mat || !nom) { alert('Veuillez renseigner votre matricule et votre nom.'); return; }
+  _pi = { matricule: mat, nom, date: new Date().toLocaleString('fr-FR') };
+  _sq = shuffle(ALL_QUESTIONS).slice(0, 10);
+  _ua = {};
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('quiz-area').style.display = 'block';
+  _rq();
+}
+
+function _rq() {
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+  _sq.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.innerHTML = `
+      <div class="q-number">Question ${i + 1} / 10</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="opts-${i}">
+        ${q.options.map((opt, j) => `
+          <label id="lbl-${i}-${j}">
+            <input type="radio" name="q${i}" value="${j}" onchange="_sa(${i},${j})" />
+            ${opt}
+          </label>`).join('')}
+      </div>`;
+    container.appendChild(card);
+  });
+  _up();
+}
+
+function _sa(qi, oi) {
+  _ua[qi] = oi;
+  document.querySelectorAll(`#opts-${qi} label`).forEach((l, j) => l.classList.toggle('selected', j === oi));
+  _up();
+}
+
+function _up() {
+  document.getElementById('progress-bar').style.width = (Object.keys(_ua).length / 10 * 100) + '%';
+}
+
+async function submitQuiz() {
+  if (Object.keys(_ua).length < 10) {
+    alert('Veuillez répondre à toutes les questions avant de soumettre.');
+    return;
+  }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours...';
+
+  let score = 0;
+  const details = [];
+  _sq.forEach((q, i) => {
+    const ua = _ua[i];
+    const correct = ua === q.correct;
+    if (correct) score++;
+    details.push({ question: q.q, userAnswer: q.options[ua], correctAnswer: q.options[q.correct], correct });
+  });
+
+  const pct = score * 10;
+  const result = { ..._pi, score: score + '/10', pourcentage: pct + '%', details };
+  await _sv(result);
+
+  document.getElementById('quiz-area').style.display = 'none';
+  const res = document.getElementById('results');
+  res.style.display = 'block';
+  document.getElementById('save-status').innerHTML = '<span style="color:var(--correct)">✅ Vos r\u00e9ponses ont \u00e9t\u00e9 transmises. Merci !</span>';
+  document.getElementById('score-display').textContent = '✓';
+  document.getElementById('score-label').textContent = `${_pi.nom} (${_pi.matricule}) — Quiz termin\u00e9`;
+  document.getElementById('results-detail').innerHTML = '';
+}
+
+function restartQuiz() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('intro').style.display = 'block';
+  document.getElementById('matricule').value = '';
+  document.getElementById('nom').value = '';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN
+═══════════════════════════════════════════════════════════ */
+function openAdmin() {
+  document.getElementById('admin-overlay').classList.add('open');
+  document.getElementById('admin-login').style.display = 'block';
+  document.getElementById('admin-dashboard').style.display = 'none';
+  document.getElementById('admin-pw').value = '';
+  document.getElementById('pw-error').textContent = '';
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('open');
+}
+
+function checkPassword() {
+  const val = document.getElementById('admin-pw').value;
+  if (window.__ap(val)) {
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = 'block';
+    renderAdminTable();
+  } else {
+    document.getElementById('pw-error').textContent = '⛔ Mot de passe incorrect.';
+    document.getElementById('admin-pw').value = '';
+  }
+}
+
+document.getElementById('admin-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+async function renderAdminTable() {
+  const tbody = document.getElementById('results-tbody');
+  const empty = document.getElementById('admin-empty');
+  const table = document.getElementById('results-table');
+
+  empty.textContent = 'Chargement...';
+  empty.style.display = 'block';
+  table.style.display = 'none';
+  tbody.innerHTML = '';
+
+  const data = await _gsr();
+
+  if (!data.length) {
+    empty.textContent = 'Aucun résultat enregistré pour le moment.';
+    return;
+  }
+  empty.style.display = 'none';
+  table.style.display = 'table';
+
+  data.forEach((r, i) => {
+    const pct = parseInt(r.pourcentage);
+    const tag = pct >= 80 ? `<span class="tag-pass">✅ Admis</span>`
+              : pct >= 60 ? `<span style="color:#f0c060">⚠️ Passable</span>`
+              : `<span class="tag-fail">❌ Échec</span>`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td style="white-space:nowrap;font-size:.8rem">${r.date}</td>
+      <td>${r.matricule}</td>
+      <td>${r.nom}</td>
+      <td style="font-weight:600">${r.score}</td>
+      <td>${r.pourcentage}</td>
+      <td>${tag}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+async function exportCSV() {
+  const data = await _gsr();
+  if (!data.length) { alert('Aucun résultat à exporter.'); return; }
+  const header = ['#','Date','Matricule','Nom','Score','Pourcentage','Statut'];
+  const rows = data.map((r, i) => {
+    const pct = parseInt(r.pourcentage);
+    const s = pct >= 80 ? 'Admis' : pct >= 60 ? 'Passable' : 'Échec';
+    return [i+1, r.date, r.matricule, r.nom, r.score, r.pourcentage, s].map(v => `"${v}"`).join(',');
+  });
+  const csv = [header.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'resultats_marine.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function clearResults() {
+  if (!confirm('Effacer tous les résultats enregistrés ? Cette action est irréversible.')) return;
+  try {
+    await fetch(_JK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify([])
+    });
+    renderAdminTable();
+  } catch(e) { alert('Erreur lors de la suppression.'); }
+}
+
+// Fermer overlay en cliquant en dehors
+document.getElementById('admin-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAdmin();
+});
+</script>
+</body>
+</html>
